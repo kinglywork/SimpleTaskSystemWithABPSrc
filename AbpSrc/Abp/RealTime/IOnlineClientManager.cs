@@ -5,13 +5,8 @@ using JetBrains.Annotations;
 namespace Abp.RealTime
 {
     /// <summary>
-    /// Used to manage online clients those are connected to the application.
+    /// Used to manage online clients those are connected to the application..
     /// </summary>
-    public interface IOnlineClientManager<T> : IOnlineClientManager
-    {
-
-    }
-
     public interface IOnlineClientManager
     {
         event EventHandler<OnlineClientEventArgs> ClientConnected;

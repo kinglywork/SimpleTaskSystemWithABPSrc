@@ -4,7 +4,6 @@ using Abp.Runtime;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using System;
 
 namespace Abp.AspNetCore.EntityHistory
 {
@@ -23,15 +22,7 @@ namespace Abp.AspNetCore.EntityHistory
                     return OverridedValue.Reason;
                 }
 
-                try
-                {
-                    return HttpContextAccessor.HttpContext?.Request.GetDisplayUrl();
-                }
-                catch (NullReferenceException)
-                {
-                    // Workaround: https://github.com/aspnet/Home/issues/2718
-                    return null;
-                }
+                return HttpContextAccessor.HttpContext?.Request.GetDisplayUrl();
             }
         }
 

@@ -7,7 +7,8 @@ namespace Abp.ObjectMapping
         /// <summary>
         /// Singleton instance.
         /// </summary>
-        public static NullObjectMapper Instance { get; } = new NullObjectMapper();
+        public static NullObjectMapper Instance { get { return SingletonInstance; } }
+        private static readonly NullObjectMapper SingletonInstance = new NullObjectMapper();
 
         public TDestination Map<TDestination>(object source)
         {

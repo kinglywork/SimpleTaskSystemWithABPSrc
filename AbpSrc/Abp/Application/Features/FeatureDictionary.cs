@@ -9,7 +9,7 @@ namespace Abp.Application.Features
     public class FeatureDictionary : Dictionary<string, Feature>
     {
         /// <summary>
-        /// Adds all the child features of the current features, recursively.
+        /// Adds all child features of current features recursively.
         /// </summary>
         public void AddAllFeatures()
         {
@@ -21,8 +21,9 @@ namespace Abp.Application.Features
 
         private void AddFeatureRecursively(Feature feature)
         {
-            //Prevent multiple additions of the same-named feature.
-            if (TryGetValue(feature.Name, out var existingFeature))
+            //Prevent multiple adding of same named feature.
+            Feature existingFeature;
+            if (TryGetValue(feature.Name, out existingFeature))
             {
                 if (existingFeature != feature)
                 {

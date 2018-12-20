@@ -219,9 +219,31 @@ namespace Abp.Timing.Timezone
             return TZConvert.GetTimeZoneInfo(windowsOrIanaTimeZoneId);
         }
 
-        public static List<string> GetWindowsTimeZoneIds(bool ignoreTimeZoneNotFoundException = true)
+        public static List<TimeZoneInfo> GetWindowsTimeZoneInfos(bool ignoreTimeZoneNotFoundException = true)
         {
-            return TZConvert.KnownWindowsTimeZoneIds.ToList();
+            var timezoneInfos = new List<TimeZoneInfo>();
+
+            foreach (var windowsTimeZoneId in TZConvert.KnownWindowsTimeZoneIds)
+            {
+                try
+                {
+                    var timezoneInfo = TZConvert.GetTimeZoneInfo(windowsTimeZoneId);
+                    timezoneInfos.Add(timezoneInfo);
+                }
+                catch (TimeZoneNotFoundException exception)
+                {
+                    if (ignoreTimeZoneNotFoundException)
+                    {
+                        LogHelper.LogException(exception);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            return timezoneInfos;
         }
 
         private static void GetTimezoneMappings()

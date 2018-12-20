@@ -6,13 +6,10 @@
 
         public string TokenHeaderName { get; set; }
 
-        public string AuthorizationCookieName { get; set; }
-
         public AbpAntiForgeryConfiguration()
         {
             TokenCookieName = "XSRF-TOKEN";
             TokenHeaderName = "X-XSRF-TOKEN";
-            AuthorizationCookieName = ".AspNet.ApplicationCookie";
         }
     }
 }

@@ -4,8 +4,6 @@ using Abp.Resources.Embedded;
 using Abp.Web.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
-using System.Linq;
-using System.IO;
 
 namespace Abp.AspNetCore.EmbeddedResources
 {
@@ -20,12 +18,12 @@ namespace Abp.AspNetCore.EmbeddedResources
         {
             _iocResolver = iocResolver;
             _embeddedResourceManager = new Lazy<IEmbeddedResourceManager>(
-                iocResolver.Resolve<IEmbeddedResourceManager>,
+                () => iocResolver.Resolve<IEmbeddedResourceManager>(),
                 true
             );
 
             _configuration = new Lazy<IWebEmbeddedResourcesConfiguration>(
-                iocResolver.Resolve<IWebEmbeddedResourcesConfiguration>,
+                () => iocResolver.Resolve<IWebEmbeddedResourcesConfiguration>(),
                 true
             );
         }
@@ -37,7 +35,6 @@ namespace Abp.AspNetCore.EmbeddedResources
                 return new NotFoundFileInfo(subpath);
             }
 
-            var filename = Path.GetFileName(subpath);
             var resource = _embeddedResourceManager.Value.GetResource(subpath);
 
             if (resource == null || IsIgnoredFile(resource))
@@ -45,7 +42,7 @@ namespace Abp.AspNetCore.EmbeddedResources
                 return new NotFoundFileInfo(subpath);
             }
 
-            return new EmbeddedResourceItemFileInfo(resource, filename);
+            return new EmbeddedResourceItemFileInfo(resource);
         }
 
         public IDirectoryContents GetDirectoryContents(string subpath)
@@ -55,16 +52,9 @@ namespace Abp.AspNetCore.EmbeddedResources
                 return new NotFoundDirectoryContents();
             }
 
-            // The file name is assumed to be the remainder of the resource name. 
-            if (subpath == null)
-            {
-                return new NotFoundDirectoryContents();
-            }
+            //TODO: Implement...?
 
-            var resources = _embeddedResourceManager.Value.GetResources(subpath);
-            return new EmbeddedResourceItemDirectoryContents(resources
-                .Where(r=> !IsIgnoredFile(r))
-                .Select(r=> new EmbeddedResourceItemFileInfo(r, r.FileName.Substring(subpath.Length-1))));
+            return new NotFoundDirectoryContents();
         }
 
         public IChangeToken Watch(string filter)

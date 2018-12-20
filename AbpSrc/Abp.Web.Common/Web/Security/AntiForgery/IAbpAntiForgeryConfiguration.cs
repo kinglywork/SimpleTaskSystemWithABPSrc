@@ -16,10 +16,5 @@
         /// Default value: "X-XSRF-TOKEN". 
         /// </summary>
         string TokenHeaderName { get; set; }
-
-        /// <summary>
-        /// Usd to find auth cookie when validating Anti Forgery token.
-        /// </summary>
-        string AuthorizationCookieName { get; set; }
     }
 }

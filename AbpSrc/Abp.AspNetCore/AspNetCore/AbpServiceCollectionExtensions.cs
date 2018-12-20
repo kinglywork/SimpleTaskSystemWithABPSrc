@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Serialization;
 
 namespace Abp.AspNetCore
 {
@@ -64,10 +63,7 @@ namespace Abp.AspNetCore
             //Configure JSON serializer
             services.Configure<MvcJsonOptions>(jsonOptions =>
             {
-                jsonOptions.SerializerSettings.ContractResolver = new AbpMvcContractResolver(iocResolver)
-                {
-                    NamingStrategy = new CamelCaseNamingStrategy()
-                };
+                jsonOptions.SerializerSettings.Converters.Insert(0, new AbpDateTimeConverter());
             });
 
             //Configure MVC

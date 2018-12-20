@@ -13,7 +13,7 @@ namespace Abp.EntityHistory
         /// <summary>
         /// Maximum length of <see cref="BrowserInfo"/> property.
         /// </summary>
-        public const int MaxBrowserInfoLength = 512;
+        public const int MaxBrowserInfoLength = 256;
 
         /// <summary>
         /// Maximum length of <see cref="ClientIpAddress"/> property.
@@ -33,19 +33,19 @@ namespace Abp.EntityHistory
         /// <summary>
         /// Browser information if this entity is changed in a web request.
         /// </summary>
-        [StringLength(MaxBrowserInfoLength)]
+        [MaxLength(MaxBrowserInfoLength)]
         public virtual string BrowserInfo { get; set; }
 
         /// <summary>
         /// IP address of the client.
         /// </summary>
-        [StringLength(MaxClientIpAddressLength)]
+        [MaxLength(MaxClientIpAddressLength)]
         public virtual string ClientIpAddress { get; set; }
 
         /// <summary>
         /// Name (generally computer name) of the client.
         /// </summary>
-        [StringLength(MaxClientNameLength)]
+        [MaxLength(MaxClientNameLength)]
         public virtual string ClientName { get; set; }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Abp.EntityHistory
         /// <summary>
         /// Reason for this change set.
         /// </summary>
-        [StringLength(MaxReasonLength)]
+        [MaxLength(MaxReasonLength)]
         public virtual string Reason { get; set; }
 
         /// <summary>

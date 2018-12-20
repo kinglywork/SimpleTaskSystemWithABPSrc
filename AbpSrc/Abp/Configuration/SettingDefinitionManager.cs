@@ -43,7 +43,8 @@ namespace Abp.Configuration
 
         public SettingDefinition GetSettingDefinition(string name)
         {
-            if (!_settings.TryGetValue(name, out var settingDefinition))
+            SettingDefinition settingDefinition;
+            if (!_settings.TryGetValue(name, out settingDefinition))
             {
                 throw new AbpException("There is no setting defined with name: " + name);
             }

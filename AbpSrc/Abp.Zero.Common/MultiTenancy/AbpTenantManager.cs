@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -35,8 +34,6 @@ namespace Abp.MultiTenancy
 
         public ILocalizationManager LocalizationManager { get; set; }
 
-        protected string LocalizationSourceName { get; set; }
-
         public ICacheManager CacheManager { get; set; }
 
         public IFeatureManager FeatureManager { get; set; }
@@ -60,7 +57,6 @@ namespace Abp.MultiTenancy
             TenantFeatureRepository = tenantFeatureRepository;
             EditionManager = editionManager;
             LocalizationManager = NullLocalizationManager.Instance;
-            LocalizationSourceName = AbpZeroConsts.LocalizationSourceName;
         }
 
         public virtual IQueryable<TTenant> Tenants { get { return TenantRepository.GetAll(); } }
@@ -77,7 +73,7 @@ namespace Abp.MultiTenancy
             await TenantRepository.InsertAsync(tenant);
         }
 
-        public virtual async Task UpdateAsync(TTenant tenant)
+        public async Task UpdateAsync(TTenant tenant)
         {
             if (await TenantRepository.FirstOrDefaultAsync(t => t.TenancyName == tenant.TenancyName && t.Id != tenant.Id) != null)
             {
@@ -233,14 +229,9 @@ namespace Abp.MultiTenancy
             return Task.FromResult(0);
         }
 
-        protected virtual string L(string name)
+        private string L(string name)
         {
-            return LocalizationManager.GetString(LocalizationSourceName, name);
-        }
-
-        protected virtual string L(string name, CultureInfo cultureInfo)
-        {
-            return LocalizationManager.GetString(LocalizationSourceName, name, cultureInfo);
+            return LocalizationManager.GetString(AbpZeroConsts.LocalizationSourceName, name);
         }
 
         public void HandleEvent(EntityChangedEventData<TTenant> eventData)

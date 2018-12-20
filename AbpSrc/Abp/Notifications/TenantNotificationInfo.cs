@@ -21,39 +21,39 @@ namespace Abp.Notifications
         /// Unique notification name.
         /// </summary>
         [Required]
-        [StringLength(NotificationInfo.MaxNotificationNameLength)]
+        [MaxLength(NotificationInfo.MaxNotificationNameLength)]
         public virtual string NotificationName { get; set; }
 
         /// <summary>
         /// Notification data as JSON string.
         /// </summary>
-        [StringLength(NotificationInfo.MaxDataLength)]
+        [MaxLength(NotificationInfo.MaxDataLength)]
         public virtual string Data { get; set; }
 
         /// <summary>
         /// Type of the JSON serialized <see cref="Data"/>.
         /// It's AssemblyQualifiedName of the type.
         /// </summary>
-        [StringLength(NotificationInfo.MaxDataTypeNameLength)]
+        [MaxLength(NotificationInfo.MaxDataTypeNameLength)]
         public virtual string DataTypeName { get; set; }
 
         /// <summary>
         /// Gets/sets entity type name, if this is an entity level notification.
         /// It's FullName of the entity type.
         /// </summary>
-        [StringLength(NotificationInfo.MaxEntityTypeNameLength)]
+        [MaxLength(NotificationInfo.MaxEntityTypeNameLength)]
         public virtual string EntityTypeName { get; set; }
 
         /// <summary>
         /// AssemblyQualifiedName of the entity type.
         /// </summary>
-        [StringLength(NotificationInfo.MaxEntityTypeAssemblyQualifiedNameLength)]
+        [MaxLength(NotificationInfo.MaxEntityTypeAssemblyQualifiedNameLength)]
         public virtual string EntityTypeAssemblyQualifiedName { get; set; }
 
         /// <summary>
         /// Gets/sets primary key of the entity, if this is an entity level notification.
         /// </summary>
-        [StringLength(NotificationInfo.MaxEntityIdLength)]
+        [MaxLength(NotificationInfo.MaxEntityIdLength)]
         public virtual string EntityId { get; set; }
 
         /// <summary>

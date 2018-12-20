@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using Abp.AspNetCore.Security;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Abp.AspNetCore
 {
@@ -65,9 +64,6 @@ namespace Abp.AspNetCore
         {
             var abpBootstrapper = app.ApplicationServices.GetRequiredService<AbpBootstrapper>();
             abpBootstrapper.Initialize();
-
-            var applicationLifetime = app.ApplicationServices.GetService<IApplicationLifetime>();
-            applicationLifetime.ApplicationStopping.Register(() => abpBootstrapper.Dispose());
         }
 
         public static void UseCastleLoggerFactory(this IApplicationBuilder app)

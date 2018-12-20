@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Abp.Authorization.Users;
-using Abp.Domain.Uow;
 using Abp.Runtime.Security;
 using IdentityModel;
 using IdentityServer4.AspNetIdentity;
@@ -39,7 +38,6 @@ namespace Abp.IdentityServer4
             Logger = logger;
         }
 
-        [UnitOfWork]
         public override async Task ValidateAsync(ResourceOwnerPasswordValidationContext context)
         {
             var user = await UserManager.FindByNameAsync(context.UserName);

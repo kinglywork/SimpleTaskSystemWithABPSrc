@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Abp.Application.Features;
 using Abp.Authorization.Users;
-using Abp.Collections.Extensions;
 using Abp.Domain.Services;
 using Abp.Domain.Uow;
 using Abp.IdentityFramework;
@@ -30,8 +28,6 @@ namespace Abp.Authorization.Roles
     {
         public ILocalizationManager LocalizationManager { get; set; }
 
-        protected string LocalizationSourceName { get; set; }
-
         public IAbpSession AbpSession { get; set; }
 
         public IRoleManagementConfig RoleManagementConfig { get; private set; }
@@ -53,11 +49,9 @@ namespace Abp.Authorization.Roles
 
         protected AbpRoleStore<TRole, TUser> AbpStore { get; private set; }
 
-        protected IPermissionManager PermissionManager { get; }
-
-        protected ICacheManager CacheManager { get; }
-
-        protected IUnitOfWorkManager UnitOfWorkManager { get; }
+        private readonly IPermissionManager _permissionManager;
+        private readonly ICacheManager _cacheManager;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
 
         /// <summary>
         /// Constructor.
@@ -70,15 +64,14 @@ namespace Abp.Authorization.Roles
             IUnitOfWorkManager unitOfWorkManager)
             : base(store)
         {
-            PermissionManager = permissionManager;
-            CacheManager = cacheManager;
-            UnitOfWorkManager = unitOfWorkManager;
+            _permissionManager = permissionManager;
+            _cacheManager = cacheManager;
+            _unitOfWorkManager = unitOfWorkManager;
 
             RoleManagementConfig = roleManagementConfig;
             AbpStore = store;
             AbpSession = NullAbpSession.Instance;
             LocalizationManager = NullLocalizationManager.Instance;
-            LocalizationSourceName = AbpZeroConsts.LocalizationSourceName;
         }
 
         /// <summary>
@@ -89,7 +82,7 @@ namespace Abp.Authorization.Roles
         /// <returns>True, if the role has the permission</returns>
         public virtual async Task<bool> IsGrantedAsync(string roleName, string permissionName)
         {
-            return await IsGrantedAsync((await GetRoleByNameAsync(roleName)).Id, PermissionManager.GetPermission(permissionName));
+            return await IsGrantedAsync((await GetRoleByNameAsync(roleName)).Id, _permissionManager.GetPermission(permissionName));
         }
 
         /// <summary>
@@ -100,7 +93,7 @@ namespace Abp.Authorization.Roles
         /// <returns>True, if the role has the permission</returns>
         public virtual async Task<bool> IsGrantedAsync(int roleId, string permissionName)
         {
-            return await IsGrantedAsync(roleId, PermissionManager.GetPermission(permissionName));
+            return await IsGrantedAsync(roleId, _permissionManager.GetPermission(permissionName));
         }
 
         /// <summary>
@@ -158,7 +151,7 @@ namespace Abp.Authorization.Roles
         {
             var permissionList = new List<Permission>();
 
-            foreach (var permission in PermissionManager.GetAllPermissions())
+            foreach (var permission in _permissionManager.GetAllPermissions())
             {
                 if (await IsGrantedAsync(role.Id, permission))
                 {
@@ -214,7 +207,6 @@ namespace Abp.Authorization.Roles
                 return;
             }
 
-            await RolePermissionStore.RemovePermissionAsync(role, new PermissionGrantInfo(permission.Name, false));
             await RolePermissionStore.AddPermissionAsync(role, new PermissionGrantInfo(permission.Name, true));
         }
 
@@ -231,7 +223,6 @@ namespace Abp.Authorization.Roles
             }
 
             await RolePermissionStore.RemovePermissionAsync(role, new PermissionGrantInfo(permission.Name, true));
-            await RolePermissionStore.AddPermissionAsync(role, new PermissionGrantInfo(permission.Name, false));
         }
 
         /// <summary>
@@ -240,7 +231,7 @@ namespace Abp.Authorization.Roles
         /// <param name="role">Role</param>
         public async Task ProhibitAllPermissionsAsync(TRole role)
         {
-            foreach (var permission in PermissionManager.GetAllPermissions())
+            foreach (var permission in _permissionManager.GetAllPermissions())
             {
                 await ProhibitPermissionAsync(role, permission);
             }
@@ -249,6 +240,7 @@ namespace Abp.Authorization.Roles
         /// <summary>
         /// Resets all permission settings for a role.
         /// It removes all permission settings for the role.
+        /// Role will have permissions those have <see cref="Permission.IsGrantedByDefault"/> set to true.
         /// </summary>
         /// <param name="role">Role</param>
         public async Task ResetAllPermissionsAsync(TRole role)
@@ -342,9 +334,9 @@ namespace Abp.Authorization.Roles
         {
             FeatureDependencyContext.TenantId = role.TenantId;
 
-            var permissions = PermissionManager.GetAllPermissions(role.GetMultiTenancySide())
-                                                .Where(permission =>
-                                                    permission.FeatureDependency == null ||
+            var permissions = _permissionManager.GetAllPermissions(role.GetMultiTenancySide())
+                                                .Where(permission => 
+                                                    permission.FeatureDependency == null || 
                                                     permission.FeatureDependency.IsSatisfied(FeatureDependencyContext)
                                                 );
 
@@ -356,7 +348,7 @@ namespace Abp.Authorization.Roles
         {
             var staticRoleDefinitions = RoleManagementConfig.StaticRoles.Where(sr => sr.Side == MultiTenancySides.Tenant);
 
-            using (UnitOfWorkManager.Current.SetTenantId(tenantId))
+            using (_unitOfWorkManager.Current.SetTenantId(tenantId))
             {
                 foreach (var staticRoleDefinition in staticRoleDefinitions)
                 {
@@ -404,39 +396,15 @@ namespace Abp.Authorization.Roles
         private async Task<RolePermissionCacheItem> GetRolePermissionCacheItemAsync(int roleId)
         {
             var cacheKey = roleId + "@" + (GetCurrentTenantId() ?? 0);
-
-            return await CacheManager.GetRolePermissionCache().GetAsync(cacheKey, async () =>
+            return await _cacheManager.GetRolePermissionCache().GetAsync(cacheKey, async () =>
             {
                 var newCacheItem = new RolePermissionCacheItem(roleId);
-
-                var role = await Store.FindByIdAsync(roleId);
-                if (role == null)
-                {
-                    throw new AbpException("There is no role with given id: " + roleId);
-                }
-
-                var staticRoleDefinition = RoleManagementConfig.StaticRoles.FirstOrDefault(r =>
-                    r.RoleName == role.Name && r.Side == role.GetMultiTenancySide());
-                if (staticRoleDefinition != null)
-                {
-                    foreach (var permission in PermissionManager.GetAllPermissions())
-                    {
-                        if (staticRoleDefinition.IsGrantedByDefault(permission))
-                        {
-                            newCacheItem.GrantedPermissions.Add(permission.Name);
-                        }
-                    }
-                }
 
                 foreach (var permissionInfo in await RolePermissionStore.GetPermissionsAsync(roleId))
                 {
                     if (permissionInfo.IsGranted)
                     {
-                        newCacheItem.GrantedPermissions.AddIfNotContains(permissionInfo.Name);
-                    }
-                    else
-                    {
-                        newCacheItem.GrantedPermissions.Remove(permissionInfo.Name);
+                        newCacheItem.GrantedPermissions.Add(permissionInfo.Name);
                     }
                 }
 
@@ -444,21 +412,16 @@ namespace Abp.Authorization.Roles
             });
         }
 
-        protected virtual string L(string name)
+        private string L(string name)
         {
-            return LocalizationManager.GetString(LocalizationSourceName, name);
-        }
-
-        protected virtual string L(string name, CultureInfo cultureInfo)
-        {
-            return LocalizationManager.GetString(LocalizationSourceName, name, cultureInfo);
+            return LocalizationManager.GetString(AbpZeroConsts.LocalizationSourceName, name);
         }
 
         private int? GetCurrentTenantId()
         {
-            if (UnitOfWorkManager.Current != null)
+            if (_unitOfWorkManager.Current != null)
             {
-                return UnitOfWorkManager.Current.GetTenantId();
+                return _unitOfWorkManager.Current.GetTenantId();
             }
 
             return AbpSession.TenantId;

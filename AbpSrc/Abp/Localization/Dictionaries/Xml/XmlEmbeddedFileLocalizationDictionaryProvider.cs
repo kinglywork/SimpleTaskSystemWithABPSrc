@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Abp.Localization.Dictionaries.Xml
 {
@@ -25,11 +23,7 @@ namespace Abp.Localization.Dictionaries.Xml
 
         public override void Initialize(string sourceName)
         {
-            var allCultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures);
-            var resourceNames = _assembly.GetManifestResourceNames().Where(resouceName =>
-                allCultureInfos.Any(culture => resouceName.EndsWith($"{sourceName}.xml", true, null) ||
-                                               resouceName.EndsWith($"{sourceName}-{culture.Name}.xml", true,
-                                                   null))).ToList();
+            var resourceNames = _assembly.GetManifestResourceNames();
             foreach (var resourceName in resourceNames)
             {
                 if (resourceName.StartsWith(_rootNamespace))

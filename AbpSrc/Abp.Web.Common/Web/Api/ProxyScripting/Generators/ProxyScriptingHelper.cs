@@ -7,7 +7,7 @@ using Abp.Web.Api.Modeling;
 
 namespace Abp.Web.Api.ProxyScripting.Generators
 {
-    public static class ProxyScriptingHelper
+    internal static class ProxyScriptingHelper
     {
         public const string DefaultHttpVerb = "POST";
 

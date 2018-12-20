@@ -1,14 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using Abp.Authorization;
-using Abp.BackgroundJobs;
 using Abp.Domain.Entities;
-using Abp.Domain.Uow;
 using Abp.Extensions;
-using Abp.Json;
-using Abp.Runtime.Validation;
-using Abp.UI;
 
 namespace Abp.Auditing
 {
@@ -46,7 +39,7 @@ namespace Abp.Auditing
         /// <summary>
         /// Maximum length of <see cref="BrowserInfo"/> property.
         /// </summary>
-        public static int MaxBrowserInfoLength = 512;
+        public static int MaxBrowserInfoLength = 256;
 
         /// <summary>
         /// Maximum length of <see cref="Exception"/> property.
@@ -135,7 +128,7 @@ namespace Abp.Auditing
         /// <returns>The <see cref="AuditLog"/> object that is created using <see cref="auditInfo"/></returns>
         public static AuditLog CreateFromAuditInfo(AuditInfo auditInfo)
         {
-            var exceptionMessage = GetAbpClearException(auditInfo.Exception);
+            var exceptionMessage = auditInfo.Exception != null ? auditInfo.Exception.ToString() : null;
             return new AuditLog
                    {
                        TenantId = auditInfo.TenantId,
@@ -161,42 +154,6 @@ namespace Abp.Auditing
                 "AUDIT LOG: {0}.{1} is executed by user {2} in {3} ms from {4} IP address.",
                 ServiceName, MethodName, UserId, ExecutionDuration, ClientIpAddress
                 );
-        }
-
-        /// <summary>
-        /// Make audit exceptions more explicit.
-        /// </summary>
-        /// <param name="exception"></param>
-        /// <returns></returns>
-        public static string GetAbpClearException(Exception exception)
-        {
-            var clearMessage = "";
-            switch (exception)
-            {
-                case null:
-                    return null;
-
-                case AbpValidationException abpValidationException:
-                    clearMessage = "There are " + abpValidationException.ValidationErrors.Count + " validation errors:";
-                    foreach (var validationResult in abpValidationException.ValidationErrors) 
-                    {
-                        var memberNames = "";
-                        if (validationResult.MemberNames != null && validationResult.MemberNames.Any())
-                        {
-                            memberNames = " (" + string.Join(", ", validationResult.MemberNames) + ")";
-                        }
-
-                        clearMessage += "\r\n" + validationResult.ErrorMessage + memberNames;
-                    }
-                    break;
-
-                case UserFriendlyException userFriendlyException:
-                    clearMessage =
-                        $"UserFriendlyException.Code:{userFriendlyException.Code}\r\nUserFriendlyException.Details:{userFriendlyException.Details}";
-                    break;
-            }
-
-            return exception + (clearMessage.IsNullOrWhiteSpace() ? "" : "\r\n\r\n" + clearMessage);
         }
     }
 }

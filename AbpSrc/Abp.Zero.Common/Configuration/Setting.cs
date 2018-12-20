@@ -37,13 +37,13 @@ namespace Abp.Configuration
         /// Unique name of the setting.
         /// </summary>
         [Required]
-        [StringLength(MaxNameLength)]
+        [MaxLength(MaxNameLength)]
         public virtual string Name { get; set; }
 
         /// <summary>
         /// Value of the setting.
         /// </summary>
-        [StringLength(MaxValueLength)]
+        [MaxLength(MaxValueLength)]
         public virtual string Value { get; set; }
 
         /// <summary>

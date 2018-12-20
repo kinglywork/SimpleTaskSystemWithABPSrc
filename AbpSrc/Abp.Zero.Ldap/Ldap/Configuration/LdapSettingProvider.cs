@@ -10,13 +10,6 @@ namespace Abp.Zero.Ldap.Configuration
     /// </summary>
     public class LdapSettingProvider : SettingProvider
     {
-        protected string LocalizationSourceName { get; set; }
-
-        public LdapSettingProvider()
-        {
-            LocalizationSourceName = AbpZeroConsts.LocalizationSourceName;
-        }
-
         public override IEnumerable<SettingDefinition> GetSettingDefinitions(SettingDefinitionProviderContext context)
         {
             return new[]
@@ -30,9 +23,9 @@ namespace Abp.Zero.Ldap.Configuration
                    };
         }
 
-        protected virtual ILocalizableString L(string name)
+        private static ILocalizableString L(string name)
         {
-            return new LocalizableString(name, LocalizationSourceName);
+            return new LocalizableString(name, AbpZeroConsts.LocalizationSourceName);
         }
     }
 }

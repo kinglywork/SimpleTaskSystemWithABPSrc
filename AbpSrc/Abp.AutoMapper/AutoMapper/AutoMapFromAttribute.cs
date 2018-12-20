@@ -29,7 +29,7 @@ namespace Abp.AutoMapper
 
             foreach (var targetType in TargetTypes)
             {
-                configuration.CreateAutoAttributeMaps(targetType, new[] { type }, MemberList);
+                configuration.CreateMap(targetType, type, MemberList);
             }
         }
     }

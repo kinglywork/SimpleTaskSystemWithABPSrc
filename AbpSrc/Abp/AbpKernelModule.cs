@@ -21,12 +21,10 @@ using Abp.Modules;
 using Abp.MultiTenancy;
 using Abp.Net.Mail;
 using Abp.Notifications;
-using Abp.RealTime;
 using Abp.Reflection.Extensions;
 using Abp.Runtime;
 using Abp.Runtime.Caching;
 using Abp.Runtime.Remoting;
-using Abp.Runtime.Validation.Interception;
 using Abp.Threading;
 using Abp.Threading.BackgroundWorkers;
 using Abp.Timing;
@@ -53,8 +51,6 @@ namespace Abp
             AddUnitOfWorkFilters();
             ConfigureCaches();
             AddIgnoredTypes();
-            AddMethodParameterValidators();
-            AddDefaultNotificationDistributor();
         }
 
         public override void Initialize()
@@ -65,8 +61,6 @@ namespace Abp
             }
 
             IocManager.IocContainer.Install(new EventBusInstaller(IocManager));
-
-            IocManager.Register(typeof(IOnlineClientManager<>), typeof(OnlineClientManager<>), DependencyLifeStyle.Singleton);
 
             IocManager.RegisterAssemblyByConvention(typeof(AbpKernelModule).GetAssembly(),
                 new ConventionalRegistrationConfig
@@ -174,18 +168,6 @@ namespace Abp
             {
                 Configuration.Validation.IgnoredTypes.AddIfNotContains(ignoredType);
             }
-        }
-
-        private void AddMethodParameterValidators()
-        {
-            Configuration.Validation.Validators.Add<DataAnnotationsValidator>();
-            Configuration.Validation.Validators.Add<ValidatableObjectValidator>();
-            Configuration.Validation.Validators.Add<CustomValidator>();
-        }
-
-        private void AddDefaultNotificationDistributor()
-        {
-            Configuration.Notifications.Distributers.Add<DefaultNotificationDistributer>();
         }
 
         private void RegisterMissingComponents()

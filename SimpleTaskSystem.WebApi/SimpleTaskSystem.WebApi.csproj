@@ -35,18 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Abp, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Abp.3.4.0\lib\netstandard2.0\Abp.dll</HintPath>
-    </Reference>
-    <Reference Include="Abp.Web, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Abp.Web.3.4.0\lib\net461\Abp.Web.dll</HintPath>
-    </Reference>
-    <Reference Include="Abp.Web.Api, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Abp.Web.Api.3.4.0\lib\net461\Abp.Web.Api.dll</HintPath>
-    </Reference>
-    <Reference Include="Abp.Web.Common, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Abp.Web.Common.3.4.0\lib\netstandard2.0\Abp.Web.Common.dll</HintPath>
-    </Reference>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Core.4.2.1\lib\net45\Castle.Core.dll</HintPath>
     </Reference>
@@ -210,6 +198,22 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\AbpSrc\Abp.Web.Api\Abp.Web.Api.csproj">
+      <Project>{671288fd-2f00-4f74-844b-1963e898f048}</Project>
+      <Name>Abp.Web.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AbpSrc\Abp.Web.Common\Abp.Web.Common.csproj">
+      <Project>{6ece989d-a310-4d76-a089-f19842a4d748}</Project>
+      <Name>Abp.Web.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AbpSrc\Abp.Web\Abp.Web.csproj">
+      <Project>{a6b9c74b-afb5-4862-a3aa-569015e748ca}</Project>
+      <Name>Abp.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AbpSrc\Abp\Abp.csproj">
+      <Project>{f546f6c1-6b99-4e6c-9ada-97e165751ec0}</Project>
+      <Name>Abp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SimpleTaskSystem.Application\SimpleTaskSystem.Application.csproj">
       <Project>{EDF5D964-4C0F-4F19-B674-58A38A5E5401}</Project>
       <Name>SimpleTaskSystem.Application</Name>

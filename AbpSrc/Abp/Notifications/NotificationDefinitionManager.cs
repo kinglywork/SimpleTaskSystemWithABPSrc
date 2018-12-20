@@ -67,11 +67,6 @@ namespace Abp.Notifications
             return _notificationDefinitions.GetOrDefault(name);
         }
 
-        public void Remove(string name)
-        {
-            _notificationDefinitions.Remove(name);
-        }
-
         public IReadOnlyList<NotificationDefinition> GetAll()
         {
             return _notificationDefinitions.Values.ToImmutableList();

@@ -66,7 +66,6 @@ namespace Abp.WebApi.ExceptionHandling
 
             if (!wrapResultAttribute.WrapOnError)
             {
-                context.Response.StatusCode = GetStatusCode(context, wrapResultAttribute.WrapOnError);
                 return;
             }
 
@@ -91,7 +90,7 @@ namespace Abp.WebApi.ExceptionHandling
             else
             {
                 context.Response = context.Request.CreateResponse(
-                    GetStatusCode(context, wrapResultAttribute.WrapOnError),
+                    GetStatusCode(context),
                     new AjaxResponse(
                         SingletonDependency<IErrorInfoBuilder>.Instance.BuildForException(context.Exception),
                         context.Exception is Abp.Authorization.AbpAuthorizationException)
@@ -101,7 +100,7 @@ namespace Abp.WebApi.ExceptionHandling
             EventBus.Trigger(this, new AbpHandledExceptionData(context.Exception));
         }
 
-        protected virtual HttpStatusCode GetStatusCode(HttpActionExecutedContext context, bool wrapOnError)
+        protected virtual HttpStatusCode GetStatusCode(HttpActionExecutedContext context)
         {
             if (context.Exception is Abp.Authorization.AbpAuthorizationException)
             {
@@ -120,12 +119,7 @@ namespace Abp.WebApi.ExceptionHandling
                 return HttpStatusCode.NotFound;
             }
 
-            if (wrapOnError)
-            {
-                return HttpStatusCode.InternalServerError;
-            }
-
-            return context.Response.StatusCode;
+            return HttpStatusCode.InternalServerError;
         }
 
         protected virtual bool IsIgnoredUrl(Uri uri)

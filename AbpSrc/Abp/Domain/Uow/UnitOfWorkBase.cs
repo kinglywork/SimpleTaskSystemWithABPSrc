@@ -39,8 +39,6 @@ namespace Abp.Domain.Uow
         }
         private readonly List<DataFilterConfiguration> _filters;
 
-        public Dictionary<string, object> Items { get; set; }
-
         /// <summary>
         /// Gets default UOW options.
         /// </summary>
@@ -101,7 +99,6 @@ namespace Abp.Domain.Uow
             _filters = defaultOptions.Filters.ToList();
 
             AbpSession = NullAbpSession.Instance;
-            Items = new Dictionary<string, object>();
         }
 
         /// <inheritdoc/>

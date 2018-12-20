@@ -210,7 +210,7 @@ namespace Abp.Authorization.Roles
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            return _roleRepository.FirstOrDefaultAsync(id.To<int>());
+            return _roleRepository.GetAsync(id.To<int>());
         }
 
         /// <summary>

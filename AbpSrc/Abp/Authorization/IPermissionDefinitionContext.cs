@@ -32,11 +32,5 @@ namespace Abp.Authorization
         /// <param name="name">Unique name of the permission</param>
         /// <returns>Permission object or null</returns>
         Permission GetPermissionOrNull(string name);
-
-        /// <summary>
-        /// Remove permission with given name
-        /// </summary>
-        /// <param name="name"></param>
-        void RemovePermission(string name);
     }
 }

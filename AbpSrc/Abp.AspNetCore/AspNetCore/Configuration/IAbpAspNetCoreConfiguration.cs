@@ -33,12 +33,7 @@ namespace Abp.AspNetCore.Configuration
         /// Default: true.
         /// </summary>
         bool SetNoCacheForAjaxResponses { get; set; }
-
-        /// <summary>
-        /// Default: false.
-        /// </summary>
-        bool UseMvcDateTimeFormatForAppServices { get; set; }
-
+        
         /// <summary>
         /// Used to add route config for modules.
         /// </summary>

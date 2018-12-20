@@ -10,7 +10,6 @@ using Abp.Localization;
 using Abp.Localization.Sources;
 using Abp.ObjectMapping;
 using Abp.Runtime.Session;
-using Abp.Web.Mvc.Alerts;
 using Castle.Core.Logging;
 using Microsoft.AspNetCore.Mvc;
 
@@ -93,7 +92,6 @@ namespace Abp.AspNetCore.Mvc.Controllers
                 return _localizationSource;
             }
         }
-
         private ILocalizationSource _localizationSource;
 
         /// <summary>
@@ -117,11 +115,6 @@ namespace Abp.AspNetCore.Mvc.Controllers
             }
             set { _unitOfWorkManager = value; }
         }
-
-        public IAlertManager AlertManager { get; set; }
-
-        public AlertList Alerts => AlertManager.Alerts;
-
         private IUnitOfWorkManager _unitOfWorkManager;
 
         /// <summary>

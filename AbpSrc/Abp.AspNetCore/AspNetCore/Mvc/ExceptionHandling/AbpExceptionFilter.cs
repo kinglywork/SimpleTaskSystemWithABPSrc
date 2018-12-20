@@ -53,22 +53,20 @@ namespace Abp.AspNetCore.Mvc.ExceptionHandling
                 LogHelper.LogException(Logger, context.Exception);
             }
 
-            HandleAndWrapException(context, wrapResultAttribute);
+            if (wrapResultAttribute.WrapOnError)
+            {
+                HandleAndWrapException(context);
+            }
         }
 
-        protected virtual void HandleAndWrapException(ExceptionContext context, WrapResultAttribute wrapResultAttribute)
+        private void HandleAndWrapException(ExceptionContext context)
         {
             if (!ActionResultHelper.IsObjectResult(context.ActionDescriptor.GetMethodInfo().ReturnType))
             {
                 return;
             }
 
-            context.HttpContext.Response.StatusCode = GetStatusCode(context, wrapResultAttribute.WrapOnError);
-
-            if (!wrapResultAttribute.WrapOnError)
-            {
-                return;
-            }
+            context.HttpContext.Response.StatusCode = GetStatusCode(context);
 
             context.Result = new ObjectResult(
                 new AjaxResponse(
@@ -82,7 +80,7 @@ namespace Abp.AspNetCore.Mvc.ExceptionHandling
             context.Exception = null; //Handled!
         }
 
-        protected virtual int GetStatusCode(ExceptionContext context, bool wrapOnError)
+        private int GetStatusCode(ExceptionContext context)
         {
             if (context.Exception is AbpAuthorizationException)
             {
@@ -101,12 +99,7 @@ namespace Abp.AspNetCore.Mvc.ExceptionHandling
                 return (int)HttpStatusCode.NotFound;
             }
 
-            if (wrapOnError)
-            {
-                return (int)HttpStatusCode.InternalServerError;
-            }
-
-            return context.HttpContext.Response.StatusCode;
+            return (int)HttpStatusCode.InternalServerError;
         }
     }
 }

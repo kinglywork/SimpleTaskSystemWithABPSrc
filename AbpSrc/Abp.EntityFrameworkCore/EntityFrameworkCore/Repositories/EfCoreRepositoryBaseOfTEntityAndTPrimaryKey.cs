@@ -190,7 +190,8 @@ namespace Abp.EntityFrameworkCore.Repositories
 
         public override Task<TEntity> UpdateAsync(TEntity entity)
         {
-            entity = Update(entity);
+            AttachIfNot(entity);
+            Context.Entry(entity).State = EntityState.Modified;
             return Task.FromResult(entity);
         }
 

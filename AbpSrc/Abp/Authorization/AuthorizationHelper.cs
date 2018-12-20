@@ -12,7 +12,7 @@ using Abp.Runtime.Session;
 
 namespace Abp.Authorization
 {
-    public class AuthorizationHelper : IAuthorizationHelper, ITransientDependency
+    internal class AuthorizationHelper : IAuthorizationHelper, ITransientDependency
     {
         public IAbpSession AbpSession { get; set; }
         public IPermissionChecker PermissionChecker { get; set; }
@@ -31,7 +31,7 @@ namespace Abp.Authorization
             LocalizationManager = NullLocalizationManager.Instance;
         }
 
-        public virtual async Task AuthorizeAsync(IEnumerable<IAbpAuthorizeAttribute> authorizeAttributes)
+        public async Task AuthorizeAsync(IEnumerable<IAbpAuthorizeAttribute> authorizeAttributes)
         {
             if (!_authConfiguration.IsEnabled)
             {
@@ -51,13 +51,13 @@ namespace Abp.Authorization
             }
         }
 
-        public virtual async Task AuthorizeAsync(MethodInfo methodInfo, Type type)
+        public async Task AuthorizeAsync(MethodInfo methodInfo, Type type)
         {
             await CheckFeatures(methodInfo, type);
             await CheckPermissions(methodInfo, type);
         }
 
-        protected virtual async Task CheckFeatures(MethodInfo methodInfo, Type type)
+        private async Task CheckFeatures(MethodInfo methodInfo, Type type)
         {
             var featureAttributes = ReflectionHelper.GetAttributesOfMemberAndType<RequiresFeatureAttribute>(methodInfo, type);
 
@@ -72,7 +72,7 @@ namespace Abp.Authorization
             }
         }
 
-        protected virtual async Task CheckPermissions(MethodInfo methodInfo, Type type)
+        private async Task CheckPermissions(MethodInfo methodInfo, Type type)
         {
             if (!_authConfiguration.IsEnabled)
             {
@@ -80,11 +80,6 @@ namespace Abp.Authorization
             }
 
             if (AllowAnonymous(methodInfo, type))
-            {
-                return;
-            }
-
-            if (ReflectionHelper.IsPropertyGetterSetterMethod(methodInfo, type))
             {
                 return;
             }

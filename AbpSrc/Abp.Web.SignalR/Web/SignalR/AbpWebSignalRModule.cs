@@ -32,10 +32,10 @@ namespace Abp.Web.SignalR
                 {
                     ContractResolver = new AbpSignalRContractResolver()
                 });
-
+            
             IocManager.IocContainer.Register(
-                Component.For<JsonSerializer>().Instance(serializer)
-            );
+                Component.For<JsonSerializer>().UsingFactoryMethod(() => serializer)
+                );
         }
     }
 }

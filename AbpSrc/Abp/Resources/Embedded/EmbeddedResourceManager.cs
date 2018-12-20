@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using Abp.Collections.Extensions;
 using Abp.Dependency;
-using System.IO;
-using System.Linq;
 
 namespace Abp.Resources.Embedded
 {
@@ -12,6 +10,9 @@ namespace Abp.Resources.Embedded
         private readonly IEmbeddedResourcesConfiguration _configuration;
         private readonly Lazy<Dictionary<string, EmbeddedResourceItem>> _resources;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public EmbeddedResourceManager(IEmbeddedResourcesConfiguration configuration)
         {
             _configuration = configuration;
@@ -24,23 +25,7 @@ namespace Abp.Resources.Embedded
         /// <inheritdoc/>
         public EmbeddedResourceItem GetResource(string fullPath)
         {
-            var encodedPath = EmbeddedResourcePathHelper.EncodeAsResourcesPath(fullPath);
-            return _resources.Value.GetOrDefault(encodedPath);
-        }
-
-        public IEnumerable<EmbeddedResourceItem> GetResources(string fullPath)
-        {
-            var encodedPath = EmbeddedResourcePathHelper.EncodeAsResourcesPath(fullPath);
-            if (encodedPath.Length > 0 && !encodedPath.EndsWith("."))
-            {
-                encodedPath = encodedPath + ".";
-            }
-
-            // We will assume that any file starting with this path, is in that directory.
-            // NOTE: This may include false positives, but helps in the majority of cases until 
-            // https://github.com/aspnet/FileSystem/issues/184 is solved.
-
-            return _resources.Value.Where(k => k.Key.StartsWith(encodedPath)).Select(d => d.Value);
+            return _resources.Value.GetOrDefault(EmbeddedResourcePathHelper.NormalizePath(fullPath));
         }
 
         private Dictionary<string, EmbeddedResourceItem> CreateResourcesDictionary()

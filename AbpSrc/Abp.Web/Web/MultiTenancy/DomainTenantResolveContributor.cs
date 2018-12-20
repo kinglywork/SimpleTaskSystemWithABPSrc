@@ -36,8 +36,7 @@ namespace Abp.Web.MultiTenancy
 
             var hostName = httpContext.Request.Url.Host.RemovePreFix("http://", "https://").RemovePostFix("/");
             var domainFormat = _multiTenancyConfiguration.DomainFormat.RemovePreFix("http://", "https://").Split(':')[0].RemovePostFix("/");
-            var result = new FormattedStringValueExtracter().Extract(hostName, domainFormat, true, '/');
-
+            var result = new FormattedStringValueExtracter().Extract(hostName, domainFormat, true);
             if (!result.IsMatch || !result.Matches.Any())
             {
                 return null;

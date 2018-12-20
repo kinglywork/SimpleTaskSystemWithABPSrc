@@ -11,7 +11,6 @@ using Abp.Configuration.Startup;
 using Abp.Dependency;
 using Abp.Domain.Entities;
 using Abp.Domain.Entities.Auditing;
-using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
 using Abp.Events.Bus;
 using Abp.Events.Bus.Entities;
@@ -279,38 +278,9 @@ namespace Abp.EntityFrameworkCore
 
         protected virtual void ApplyAbpConceptsForDeletedEntity(EntityEntry entry, long? userId, EntityChangeReport changeReport)
         {
-            if (IsHardDeleteEntity(entry))
-            {
-                changeReport.ChangedEntities.Add(new EntityChangeEntry(entry.Entity, EntityChangeType.Deleted));
-                return;
-            }
-
             CancelDeletionForSoftDelete(entry);
             SetDeletionAuditProperties(entry.Entity, userId);
             changeReport.ChangedEntities.Add(new EntityChangeEntry(entry.Entity, EntityChangeType.Deleted));
-        }
-
-        protected virtual bool IsHardDeleteEntity(EntityEntry entry)
-        {
-            if (CurrentUnitOfWorkProvider?.Current?.Items == null)
-            {
-                return false;
-            }
-
-            if (!CurrentUnitOfWorkProvider.Current.Items.ContainsKey(UnitOfWorkExtensionDataTypes.HardDelete))
-            {
-                return false;
-            }
-
-            var hardDeleteItems = CurrentUnitOfWorkProvider.Current.Items[UnitOfWorkExtensionDataTypes.HardDelete];
-            if (!(hardDeleteItems is HashSet<string> objects))
-            {
-                return false;
-            }
-
-            var currentTenantId = GetCurrentTenantIdOrNull();
-            var hardDeleteKey = EntityHelper.GetHardDeleteKey(entry.Entity, currentTenantId);
-            return objects.Contains(hardDeleteKey);
         }
 
         protected virtual void AddDomainEvents(List<DomainEventEntry> domainEvents, object entityAsObj)
@@ -336,9 +306,12 @@ namespace Abp.EntityFrameworkCore
             var entity = entry.Entity as IEntity<Guid>;
             if (entity != null && entity.Id == Guid.Empty)
             {
-                var idPropertyEntry = entry.Property("Id");
+                var dbGeneratedAttr = ReflectionHelper
+                    .GetSingleAttributeOrDefault<DatabaseGeneratedAttribute>(
+                    entry.Property("Id").Metadata.PropertyInfo
+                    );
 
-                if (idPropertyEntry != null && idPropertyEntry.Metadata.ValueGenerated == ValueGenerated.Never)
+                if (dbGeneratedAttr == null || dbGeneratedAttr.DatabaseGeneratedOption == DatabaseGeneratedOption.None)
                 {
                     entity.Id = GuidGenerator.Create();
                 }

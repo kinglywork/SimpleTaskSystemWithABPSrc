@@ -26,26 +26,26 @@ namespace Abp.Notifications
         /// <summary>
         /// Notification unique name.
         /// </summary>
-        [StringLength(NotificationInfo.MaxNotificationNameLength)]
+        [MaxLength(NotificationInfo.MaxNotificationNameLength)]
         public virtual string NotificationName { get; set; }
 
         /// <summary>
         /// Gets/sets entity type name, if this is an entity level notification.
         /// It's FullName of the entity type.
         /// </summary>
-        [StringLength(NotificationInfo.MaxEntityTypeNameLength)]
+        [MaxLength(NotificationInfo.MaxEntityTypeNameLength)]
         public virtual string EntityTypeName { get; set; }
 
         /// <summary>
         /// AssemblyQualifiedName of the entity type.
         /// </summary>
-        [StringLength(NotificationInfo.MaxEntityTypeAssemblyQualifiedNameLength)]
+        [MaxLength(NotificationInfo.MaxEntityTypeAssemblyQualifiedNameLength)]
         public virtual string EntityTypeAssemblyQualifiedName { get; set; }
 
         /// <summary>
         /// Gets/sets primary key of the entity, if this is an entity level notification.
         /// </summary>
-        [StringLength(NotificationInfo.MaxEntityIdLength)]
+        [MaxLength(NotificationInfo.MaxEntityIdLength)]
         public virtual string EntityId { get; set; }
 
         /// <summary>

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Abp.Web.Models.AbpUserConfiguration
 {
     public class AbpUserConfigurationDto
@@ -23,7 +21,5 @@ namespace Abp.Web.Models.AbpUserConfiguration
         public AbpUserTimingConfigDto Timing { get; set; }
 
         public AbpUserSecurityConfigDto Security { get; set; }
-
-        public Dictionary<string, object> Custom { get; set; }
     }
 }

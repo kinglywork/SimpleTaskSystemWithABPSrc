@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using Abp.Localization.Dictionaries.Xml;
 
 namespace Abp.Localization.Dictionaries.Json
@@ -36,11 +34,7 @@ namespace Abp.Localization.Dictionaries.Json
 
         public override void Initialize(string sourceName)
         {
-            var allCultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures);
-            var resourceNames = _assembly.GetManifestResourceNames().Where(resouceName =>
-                allCultureInfos.Any(culture => resouceName.EndsWith($"{sourceName}.json", true, null) ||
-                                               resouceName.EndsWith($"{sourceName}-{culture.Name}.json", true,
-                                                   null))).ToList();
+            var resourceNames = _assembly.GetManifestResourceNames();
             foreach (var resourceName in resourceNames)
             {
                 if (resourceName.StartsWith(_rootNamespace))

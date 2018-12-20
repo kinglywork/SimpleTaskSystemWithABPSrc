@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using Abp.Collections.Extensions;
 using AutoMapper;
-using AutoMapper.Collection;
-using AutoMapper.EquivalencyExpression;
-using AutoMapper.Internal;
-using Abp.Reflection.Extensions;
 
 namespace Abp.AutoMapper
 {
@@ -34,7 +27,10 @@ namespace Abp.AutoMapper
                 return;
             }
 
-            configuration.CreateAutoAttributeMaps(type, TargetTypes, MemberList);
+            foreach (var targetType in TargetTypes)
+            {
+                configuration.CreateMap(type, targetType, MemberList);
+            }
         }
     }
 }

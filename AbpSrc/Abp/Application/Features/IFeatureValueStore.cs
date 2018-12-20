@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 namespace Abp.Application.Features
 {
     /// <summary>
-    /// Defines a store to get a feature's value.
+    /// Defines a store to get feature values.
     /// </summary>
     public interface IFeatureValueStore
     {

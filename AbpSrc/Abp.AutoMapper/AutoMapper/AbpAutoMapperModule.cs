@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Reflection;
-using Abp.Configuration.Startup;
 using Abp.Localization;
 using Abp.Modules;
+using System.Reflection;
+using Abp.Configuration.Startup;
 using Abp.Reflection;
 using AutoMapper;
 using Castle.MicroKernel.Registration;
@@ -16,7 +16,7 @@ namespace Abp.AutoMapper
 
         private static volatile bool _createdMappingsBefore;
         private static readonly object SyncObj = new object();
-
+        
         public AbpAutoMapperModule(ITypeFinder typeFinder)
         {
             _typeFinder = typeFinder;
@@ -59,18 +59,12 @@ namespace Abp.AutoMapper
                     }
 
                     IocManager.IocContainer.Register(
-                        Component.For<IConfigurationProvider>().Instance(Mapper.Configuration).LifestyleSingleton()
-                    );
-                    IocManager.IocContainer.Register(
                         Component.For<IMapper>().Instance(Mapper.Instance).LifestyleSingleton()
                     );
                 }
                 else
                 {
                     var config = new MapperConfiguration(configurer);
-                    IocManager.IocContainer.Register(
-                        Component.For<IConfigurationProvider>().Instance(config).LifestyleSingleton()
-                    );
                     IocManager.IocContainer.Register(
                         Component.For<IMapper>().Instance(config.CreateMapper()).LifestyleSingleton()
                     );
@@ -102,7 +96,7 @@ namespace Abp.AutoMapper
         {
             var localizationContext = IocManager.Resolve<ILocalizationContext>();
 
-            configuration.CreateMap<ILocalizableString, string>().ConvertUsing(ls => ls == null ? null : ls.Localize(localizationContext));
+            configuration.CreateMap<ILocalizableString, string>().ConvertUsing(ls => ls?.Localize(localizationContext));
             configuration.CreateMap<LocalizableString, string>().ConvertUsing(ls => ls == null ? null : localizationContext.LocalizationManager.GetString(ls));
         }
     }

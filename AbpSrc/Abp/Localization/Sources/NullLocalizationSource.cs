@@ -13,7 +13,8 @@ namespace Abp.Localization.Sources
         /// <summary>
         /// Singleton instance.
         /// </summary>
-        public static NullLocalizationSource Instance { get; } = new NullLocalizationSource();
+        public static NullLocalizationSource Instance { get { return SingletonInstance; } }
+        private static readonly NullLocalizationSource SingletonInstance = new NullLocalizationSource();
 
         public string Name { get { return null; } }
 
@@ -21,12 +22,12 @@ namespace Abp.Localization.Sources
 
         private NullLocalizationSource()
         {
-
+            
         }
 
         public void Initialize(ILocalizationConfiguration configuration, IIocResolver iocResolver)
         {
-
+            
         }
 
         public string GetString(string name)

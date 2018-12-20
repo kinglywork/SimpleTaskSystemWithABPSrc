@@ -1,5 +1,3 @@
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Abp.Domain.Entities;
 using JetBrains.Annotations;
@@ -12,20 +10,7 @@ namespace Abp.Authorization.Users
     [Table("AbpUserTokens")]
     public class UserToken : Entity<long>, IMayHaveTenant
     {
-        /// <summary>
-        /// Maximum length of the <see cref="LoginProvider"/> property.
-        /// </summary>
-        public const int MaxLoginProviderLength = 128;
-
-        /// <summary>
-        /// Maximum length of the <see cref="Name"/> property.
-        /// </summary>
-        public const int MaxNameLength = 128;
-
-        /// <summary>
-        /// Maximum length of the <see cref="Value"/> property.
-        /// </summary>
-        public const int MaxValueLength = 512;
+        public const int MaxLoginProviderLength = 64;
 
         public virtual int? TenantId { get; set; }
 
@@ -37,32 +22,24 @@ namespace Abp.Authorization.Users
         /// <summary>
         /// Gets or sets the LoginProvider this token is from.
         /// </summary>
-        [StringLength(MaxLoginProviderLength)]
         public virtual string LoginProvider { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the token.
         /// </summary>
-        [StringLength(MaxNameLength)]
         public virtual string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the token value.
         /// </summary>
-        [StringLength(MaxValueLength)]
         public virtual string Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the token expire date
-        /// </summary>
-        public DateTime? ExpireDate { get; set; }
 
         protected UserToken()
         {
-
+            
         }
 
-        protected internal UserToken(AbpUserBase user, [NotNull] string loginProvider, [NotNull] string name, string value, DateTime? expireDate = null)
+        protected internal UserToken(AbpUserBase user, [NotNull] string loginProvider, [NotNull] string name, string value)
         {
             Check.NotNull(loginProvider, nameof(loginProvider));
             Check.NotNull(name, nameof(name));
@@ -72,7 +49,6 @@ namespace Abp.Authorization.Users
             LoginProvider = loginProvider;
             Name = name;
             Value = value;
-            ExpireDate = expireDate;
         }
     }
 }

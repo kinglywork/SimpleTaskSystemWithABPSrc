@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Abp.Application.Features;
 using Abp.Auditing;
 using Abp.BackgroundJobs;
@@ -104,27 +103,6 @@ namespace Abp.Configuration.Startup
 
         public IEntityHistoryConfiguration EntityHistory { get; private set; }
 
-        public IList<ICustomConfigProvider> CustomConfigProviders { get; private set; }
-
-        public Dictionary<string, object> GetCustomConfig()
-        {
-            var mergedConfig = new Dictionary<string, object>();
-
-            using (var scope = IocManager.CreateScope())
-            {
-                foreach (var provider in CustomConfigProviders)
-                {
-                    var config = provider.GetConfig(new CustomConfigProviderContext(scope));
-                    foreach (var keyValue in config)
-                    {
-                        mergedConfig[keyValue.Key] = keyValue.Value;
-                    }
-                }
-            }
-
-            return mergedConfig;
-        }
-
         /// <summary>
         /// Private constructor for singleton pattern.
         /// </summary>
@@ -152,7 +130,6 @@ namespace Abp.Configuration.Startup
             EmbeddedResources = IocManager.Resolve<IEmbeddedResourcesConfiguration>();
             EntityHistory = IocManager.Resolve<IEntityHistoryConfiguration>();
 
-            CustomConfigProviders = new List<ICustomConfigProvider>();
             ServiceReplaceActions = new Dictionary<Type, Action>();
         }
 

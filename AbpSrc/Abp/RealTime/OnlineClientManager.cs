@@ -10,11 +10,6 @@ using JetBrains.Annotations;
 
 namespace Abp.RealTime
 {
-    public class OnlineClientManager<T> : OnlineClientManager, IOnlineClientManager<T>
-    {
-
-    }
-
     /// <summary>
     /// Implements <see cref="IOnlineClientManager"/>.
     /// </summary>

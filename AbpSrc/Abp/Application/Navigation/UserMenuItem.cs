@@ -21,7 +21,7 @@ namespace Abp.Application.Navigation
         /// <summary>
         /// Display name of the menu item.
         /// </summary>
-        public string DisplayName { get; set; }
+        public string DisplayName { get; private set; }
 
         /// <summary>
         /// The Display order of the menu. Optional.
@@ -56,7 +56,7 @@ namespace Abp.Application.Navigation
         /// <summary>
         /// Sub items of this menu item.
         /// </summary>
-        public IList<UserMenuItem> Items { get; set; }
+        public IList<UserMenuItem> Items { get; private set; }
 
         /// <summary>
         /// Creates a new <see cref="UserMenuItem"/> object.
@@ -69,7 +69,7 @@ namespace Abp.Application.Navigation
         /// <summary>
         /// Creates a new <see cref="UserMenuItem"/> object from given <see cref="MenuItemDefinition"/>.
         /// </summary>
-        public UserMenuItem(MenuItemDefinition menuItemDefinition, ILocalizationContext localizationContext)
+        internal UserMenuItem(MenuItemDefinition menuItemDefinition, ILocalizationContext localizationContext)
         {
             Name = menuItemDefinition.Name;
             Icon = menuItemDefinition.Icon;

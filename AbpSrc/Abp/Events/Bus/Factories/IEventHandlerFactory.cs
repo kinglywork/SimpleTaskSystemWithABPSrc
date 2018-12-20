@@ -1,4 +1,3 @@
-using System;
 using Abp.Events.Bus.Handlers;
 
 namespace Abp.Events.Bus.Factories
@@ -13,12 +12,6 @@ namespace Abp.Events.Bus.Factories
         /// </summary>
         /// <returns>The event handler</returns>
         IEventHandler GetHandler();
-
-        /// <summary>
-        /// Gets type of the handler (without creating an instance).
-        /// </summary>
-        /// <returns></returns>
-        Type GetHandlerType();
 
         /// <summary>
         /// Releases an event handler.

@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,7 +13,7 @@ namespace Abp.BackgroundJobs
     /// </summary>
     public class InMemoryBackgroundJobStore : IBackgroundJobStore
     {
-        private readonly ConcurrentDictionary<long, BackgroundJobInfo> _jobs;
+        private readonly Dictionary<long, BackgroundJobInfo> _jobs;
         private long _lastId;
 
         /// <summary>
@@ -22,7 +21,7 @@ namespace Abp.BackgroundJobs
         /// </summary>
         public InMemoryBackgroundJobStore()
         {
-            _jobs = new ConcurrentDictionary<long, BackgroundJobInfo>();
+            _jobs = new Dictionary<long, BackgroundJobInfo>();
         }
 
         public Task<BackgroundJobInfo> GetAsync(long jobId)
@@ -53,7 +52,12 @@ namespace Abp.BackgroundJobs
 
         public Task DeleteAsync(BackgroundJobInfo jobInfo)
         {
-            _jobs.TryRemove(jobInfo.Id, out _);
+            if (!_jobs.ContainsKey(jobInfo.Id))
+            {
+                return Task.FromResult(0);
+            }
+
+            _jobs.Remove(jobInfo.Id);
 
             return Task.FromResult(0);
         }

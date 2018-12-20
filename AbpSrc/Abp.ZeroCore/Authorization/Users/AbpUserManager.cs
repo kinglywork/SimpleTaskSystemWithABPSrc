@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Abp.Application.Features;
 using Abp.Authorization.Roles;
@@ -11,7 +9,6 @@ using Abp.Configuration.Startup;
 using Abp.Domain.Repositories;
 using Abp.Domain.Services;
 using Abp.Domain.Uow;
-using Abp.Json;
 using Abp.Localization;
 using Abp.MultiTenancy;
 using Abp.Organizations;
@@ -20,10 +17,10 @@ using Abp.Runtime.Session;
 using Abp.UI;
 using Abp.Zero;
 using Abp.Zero.Configuration;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Abp.Authorization.Users
 {
@@ -46,15 +43,13 @@ namespace Abp.Authorization.Users
 
         public ILocalizationManager LocalizationManager { get; set; }
 
-        protected string LocalizationSourceName { get; set; }
-
         public IAbpSession AbpSession { get; set; }
 
         public FeatureDependencyContext FeatureDependencyContext { get; set; }
 
         protected AbpRoleManager<TRole, TUser> RoleManager { get; }
 
-        protected AbpUserStore<TRole, TUser> AbpUserStore { get; }
+        public AbpUserStore<TRole, TUser> AbpStore { get; }
 
         public IMultiTenancyConfig MultiTenancy { get; set; }
 
@@ -65,11 +60,10 @@ namespace Abp.Authorization.Users
         private readonly IRepository<UserOrganizationUnit, long> _userOrganizationUnitRepository;
         private readonly IOrganizationUnitSettings _organizationUnitSettings;
         private readonly ISettingManager _settingManager;
-        private readonly IOptions<IdentityOptions> _optionsAccessor;
 
         public AbpUserManager(
             AbpRoleManager<TRole, TUser> roleManager,
-            AbpUserStore<TRole, TUser> userStore,
+            AbpUserStore<TRole, TUser> store,
             IOptions<IdentityOptions> optionsAccessor,
             IPasswordHasher<TUser> passwordHasher,
             IEnumerable<IUserValidator<TUser>> userValidators,
@@ -86,7 +80,7 @@ namespace Abp.Authorization.Users
             IOrganizationUnitSettings organizationUnitSettings,
             ISettingManager settingManager)
             : base(
-                userStore,
+                store,
                 optionsAccessor,
                 passwordHasher,
                 userValidators,
@@ -103,12 +97,9 @@ namespace Abp.Authorization.Users
             _userOrganizationUnitRepository = userOrganizationUnitRepository;
             _organizationUnitSettings = organizationUnitSettings;
             _settingManager = settingManager;
-            _optionsAccessor = optionsAccessor;
 
-            AbpUserStore = userStore;
+            AbpStore = store;
             RoleManager = roleManager;
-            LocalizationManager = NullLocalizationManager.Instance;
-            LocalizationSourceName = AbpZeroConsts.LocalizationSourceName;
         }
 
         public override async Task<IdentityResult> CreateAsync(TUser user)
@@ -125,15 +116,7 @@ namespace Abp.Authorization.Users
                 user.TenantId = tenantId.Value;
             }
 
-            var isLockoutEnabled = user.IsLockoutEnabled;
-
-            var identityResult = await base.CreateAsync(user);
-            if (identityResult.Succeeded)
-            {
-                await SetLockoutEnabledAsync(user, isLockoutEnabled);
-            }
-
-            return identityResult;
+            return await base.CreateAsync(user);
         }
 
         /// <summary>
@@ -175,8 +158,6 @@ namespace Abp.Authorization.Users
             //Check for depended features
             if (permission.FeatureDependency != null && GetCurrentMultiTenancySide() == MultiTenancySides.Tenant)
             {
-                FeatureDependencyContext.TenantId = GetCurrentTenantId();
-
                 if (!await permission.FeatureDependency.IsSatisfiedAsync(FeatureDependencyContext))
                 {
                     return false;
@@ -314,24 +295,14 @@ namespace Abp.Authorization.Users
             await UserPermissionStore.AddPermissionAsync(user, new PermissionGrantInfo(permission.Name, false));
         }
 
-        public virtual Task<TUser> FindByNameOrEmailAsync(string userNameOrEmailAddress)
+        public virtual async Task<TUser> FindByNameOrEmailAsync(string userNameOrEmailAddress)
         {
-            return AbpUserStore.FindByNameOrEmailAsync(userNameOrEmailAddress);
+            return await AbpStore.FindByNameOrEmailAsync(userNameOrEmailAddress);
         }
 
         public virtual Task<List<TUser>> FindAllAsync(UserLoginInfo login)
         {
-            return AbpUserStore.FindAllAsync(login);
-        }
-
-        public virtual Task<TUser> FindAsync(int? tenantId, UserLoginInfo login)
-        {
-            return AbpUserStore.FindAsync(tenantId, login);
-        }
-
-        public virtual Task<TUser> FindByNameOrEmailAsync(int? tenantId, string userNameOrEmailAddress)
-        {
-            return AbpUserStore.FindByNameOrEmailAsync(tenantId, userNameOrEmailAddress);
+            return AbpStore.FindAllAsync(login);
         }
 
         /// <summary>
@@ -400,7 +371,7 @@ namespace Abp.Authorization.Users
                 return IdentityResult.Failed(errors.ToArray());
             }
 
-            await AbpUserStore.SetPasswordHashAsync(user, PasswordHasher.HashPassword(user, newPassword));
+            await AbpStore.SetPasswordHashAsync(user, PasswordHasher.HashPassword(user, newPassword));
             return IdentityResult.Success;
         }
 
@@ -423,7 +394,7 @@ namespace Abp.Authorization.Users
 
         public virtual async Task<IdentityResult> SetRoles(TUser user, string[] roleNames)
         {
-            await AbpUserStore.UserRepository.EnsureCollectionLoadedAsync(user, u => u.Roles);
+            await AbpStore.UserRepository.EnsureCollectionLoadedAsync(user, u => u.Roles);
 
             //Remove from removed roles
             foreach (var userRole in user.Roles.ToList())
@@ -593,7 +564,7 @@ namespace Abp.Authorization.Users
 
         public virtual async Task InitializeOptionsAsync(int? tenantId)
         {
-            Options = JsonConvert.DeserializeObject<IdentityOptions>(_optionsAccessor.Value.ToJsonString());
+            Options = new IdentityOptions();
 
             //Lockout
             Options.Lockout.AllowedForNewUsers = await IsTrueAsync(AbpZeroSettingNames.UserManagement.UserLockOut.IsEnabled, tenantId);
@@ -610,7 +581,7 @@ namespace Abp.Authorization.Users
 
         protected virtual Task<string> GetOldUserNameAsync(long userId)
         {
-            return AbpUserStore.GetUserNameFromDatabaseAsync(userId);
+            return AbpStore.GetUserNameFromDatabaseAsync(userId);
         }
 
         private async Task<UserPermissionCacheItem> GetUserPermissionCacheItemAsync(long userId)
@@ -695,14 +666,9 @@ namespace Abp.Authorization.Users
                 : _settingManager.GetSettingValueForTenantAsync<T>(settingName, tenantId.Value);
         }
 
-        protected virtual string L(string name)
+        private string L(string name)
         {
-            return LocalizationManager.GetString(LocalizationSourceName, name);
-        }
-
-        protected virtual string L(string name, CultureInfo cultureInfo)
-        {
-            return LocalizationManager.GetString(LocalizationSourceName, name, cultureInfo);
+            return LocalizationManager.GetString(AbpZeroConsts.LocalizationSourceName, name);
         }
 
         private int? GetCurrentTenantId()
@@ -725,31 +691,6 @@ namespace Abp.Authorization.Users
             }
 
             return AbpSession.MultiTenancySide;
-        }
-
-        public virtual async Task AddTokenValidityKeyAsync(
-            TUser user,
-            string tokenValidityKey,
-            DateTime expireDate,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            await AbpUserStore.AddTokenValidityKeyAsync(user, tokenValidityKey, expireDate, cancellationToken);
-        }
-
-        public virtual async Task<bool> IsTokenValidityKeyValidAsync(
-            TUser user,
-            string tokenValidityKey,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return await AbpUserStore.IsTokenValidityKeyValidAsync(user, tokenValidityKey, cancellationToken);
-        }
-
-        public virtual async Task RemoveTokenValidityKeyAsync(
-            TUser user,
-            string tokenValidityKey,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            await AbpUserStore.RemoveTokenValidityKeyAsync(user, tokenValidityKey, cancellationToken);
         }
     }
 }

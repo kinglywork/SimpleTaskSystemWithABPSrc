@@ -73,39 +73,39 @@ namespace Abp.Notifications
         /// Unique notification name.
         /// </summary>
         [Required]
-        [StringLength(MaxNotificationNameLength)]
+        [MaxLength(MaxNotificationNameLength)]
         public virtual string NotificationName { get; set; }
 
         /// <summary>
         /// Notification data as JSON string.
         /// </summary>
-        [StringLength(MaxDataLength)]
+        [MaxLength(MaxDataLength)]
         public virtual string Data { get; set; }
 
         /// <summary>
         /// Type of the JSON serialized <see cref="Data"/>.
         /// It's AssemblyQualifiedName of the type.
         /// </summary>
-        [StringLength(MaxDataTypeNameLength)]
+        [MaxLength(MaxDataTypeNameLength)]
         public virtual string DataTypeName { get; set; }
 
         /// <summary>
         /// Gets/sets entity type name, if this is an entity level notification.
         /// It's FullName of the entity type.
         /// </summary>
-        [StringLength(MaxEntityTypeNameLength)]
+        [MaxLength(MaxEntityTypeNameLength)]
         public virtual string EntityTypeName { get; set; }
 
         /// <summary>
         /// AssemblyQualifiedName of the entity type.
         /// </summary>
-        [StringLength(MaxEntityTypeAssemblyQualifiedNameLength)]
+        [MaxLength(MaxEntityTypeAssemblyQualifiedNameLength)]
         public virtual string EntityTypeAssemblyQualifiedName { get; set; }
 
         /// <summary>
         /// Gets/sets primary key of the entity, if this is an entity level notification.
         /// </summary>
-        [StringLength(MaxEntityIdLength)]
+        [MaxLength(MaxEntityIdLength)]
         public virtual string EntityId { get; set; }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Abp.Notifications
         /// If this is set, it overrides subscribed users.
         /// If this is null/empty, then notification is sent to all subscribed users.
         /// </summary>
-        [StringLength(MaxUserIdsLength)]
+        [MaxLength(MaxUserIdsLength)]
         public virtual string UserIds { get; set; }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Abp.Notifications
         /// This can be set to exclude some users while publishing notifications to subscribed users.
         /// It's not normally used if <see cref="UserIds"/> is not null.
         /// </summary>
-        [StringLength(MaxUserIdsLength)]
+        [MaxLength(MaxUserIdsLength)]
         public virtual string ExcludedUserIds { get; set; }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Abp.Notifications
         /// This is valid only if UserIds is null.
         /// If it's "0", then indicates to all tenants.
         /// </summary>
-        [StringLength(MaxTenantIdsLength)]
+        [MaxLength(MaxTenantIdsLength)]
         public virtual string TenantIds { get; set; }
 
         public NotificationInfo()

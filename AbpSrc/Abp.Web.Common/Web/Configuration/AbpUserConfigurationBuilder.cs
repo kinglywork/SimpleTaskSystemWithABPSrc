@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Abp.Application.Features;
 using Abp.Application.Navigation;
@@ -20,23 +22,18 @@ namespace Abp.Web.Configuration
 {
     public class AbpUserConfigurationBuilder : ITransientDependency
     {
-        private readonly IAbpStartupConfiguration _startupConfiguration;
-
-        protected IMultiTenancyConfig MultiTenancyConfig { get; }
-        protected ILanguageManager LanguageManager { get; }
-        protected ILocalizationManager LocalizationManager { get; }
-        protected IFeatureManager FeatureManager { get; }
-        protected IFeatureChecker FeatureChecker { get; }
-        protected IPermissionManager PermissionManager { get; }
-        protected IUserNavigationManager UserNavigationManager { get; }
-        protected ISettingDefinitionManager SettingDefinitionManager { get; }
-        protected ISettingManager SettingManager { get; }
-        protected IAbpAntiForgeryConfiguration AbpAntiForgeryConfiguration { get; }
-        protected IAbpSession AbpSession { get; }
-        protected IPermissionChecker PermissionChecker { get; }
-        protected Dictionary<string, object> CustomDataConfig { get; }
-
-        private readonly IIocResolver _iocResolver;
+        private readonly IMultiTenancyConfig _multiTenancyConfig;
+        private readonly ILanguageManager _languageManager;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly IFeatureManager _featureManager;
+        private readonly IFeatureChecker _featureChecker;
+        private readonly IPermissionManager _permissionManager;
+        private readonly IUserNavigationManager _userNavigationManager;
+        private readonly ISettingDefinitionManager _settingDefinitionManager;
+        private readonly ISettingManager _settingManager;
+        private readonly IAbpAntiForgeryConfiguration _abpAntiForgeryConfiguration;
+        private readonly IAbpSession _abpSession;
+        private readonly IPermissionChecker _permissionChecker;
 
         public AbpUserConfigurationBuilder(
             IMultiTenancyConfig multiTenancyConfig,
@@ -50,29 +47,23 @@ namespace Abp.Web.Configuration
             ISettingManager settingManager,
             IAbpAntiForgeryConfiguration abpAntiForgeryConfiguration,
             IAbpSession abpSession,
-            IPermissionChecker permissionChecker,
-            IIocResolver iocResolver,
-            IAbpStartupConfiguration startupConfiguration)
+            IPermissionChecker permissionChecker)
         {
-            MultiTenancyConfig = multiTenancyConfig;
-            LanguageManager = languageManager;
-            LocalizationManager = localizationManager;
-            FeatureManager = featureManager;
-            FeatureChecker = featureChecker;
-            PermissionManager = permissionManager;
-            UserNavigationManager = userNavigationManager;
-            SettingDefinitionManager = settingDefinitionManager;
-            SettingManager = settingManager;
-            AbpAntiForgeryConfiguration = abpAntiForgeryConfiguration;
-            AbpSession = abpSession;
-            PermissionChecker = permissionChecker;
-            _iocResolver = iocResolver;
-            _startupConfiguration = startupConfiguration;
-
-            CustomDataConfig = new Dictionary<string, object>();
+            _multiTenancyConfig = multiTenancyConfig;
+            _languageManager = languageManager;
+            _localizationManager = localizationManager;
+            _featureManager = featureManager;
+            _featureChecker = featureChecker;
+            _permissionManager = permissionManager;
+            _userNavigationManager = userNavigationManager;
+            _settingDefinitionManager = settingDefinitionManager;
+            _settingManager = settingManager;
+            _abpAntiForgeryConfiguration = abpAntiForgeryConfiguration;
+            _abpSession = abpSession;
+            _permissionChecker = permissionChecker;
         }
 
-        public virtual async Task<AbpUserConfigurationDto> GetAll()
+        public async Task<AbpUserConfigurationDto> GetAll()
         {
             return new AbpUserConfigurationDto
             {
@@ -85,35 +76,34 @@ namespace Abp.Web.Configuration
                 Setting = await GetUserSettingConfig(),
                 Clock = GetUserClockConfig(),
                 Timing = await GetUserTimingConfig(),
-                Security = GetUserSecurityConfig(),
-                Custom = _startupConfiguration.GetCustomConfig()
+                Security = GetUserSecurityConfig()
             };
         }
 
-        protected virtual AbpMultiTenancyConfigDto GetUserMultiTenancyConfig()
+        private AbpMultiTenancyConfigDto GetUserMultiTenancyConfig()
         {
             return new AbpMultiTenancyConfigDto
             {
-                IsEnabled = MultiTenancyConfig.IsEnabled
+                IsEnabled = _multiTenancyConfig.IsEnabled
             };
         }
 
-        protected virtual AbpUserSessionConfigDto GetUserSessionConfig()
+        private AbpUserSessionConfigDto GetUserSessionConfig()
         {
             return new AbpUserSessionConfigDto
             {
-                UserId = AbpSession.UserId,
-                TenantId = AbpSession.TenantId,
-                ImpersonatorUserId = AbpSession.ImpersonatorUserId,
-                ImpersonatorTenantId = AbpSession.ImpersonatorTenantId,
-                MultiTenancySide = AbpSession.MultiTenancySide
+                UserId = _abpSession.UserId,
+                TenantId = _abpSession.TenantId,
+                ImpersonatorUserId = _abpSession.ImpersonatorUserId,
+                ImpersonatorTenantId = _abpSession.ImpersonatorTenantId,
+                MultiTenancySide = _abpSession.MultiTenancySide
             };
         }
 
-        protected virtual AbpUserLocalizationConfigDto GetUserLocalizationConfig()
+        private AbpUserLocalizationConfigDto GetUserLocalizationConfig()
         {
             var currentCulture = CultureInfo.CurrentUICulture;
-            var languages = LanguageManager.GetLanguages();
+            var languages = _languageManager.GetLanguages();
 
             var config = new AbpUserLocalizationConfigDto
             {
@@ -127,10 +117,10 @@ namespace Abp.Web.Configuration
 
             if (languages.Count > 0)
             {
-                config.CurrentLanguage = LanguageManager.CurrentLanguage;
+                config.CurrentLanguage = _languageManager.CurrentLanguage;
             }
 
-            var sources = LocalizationManager.GetAllSources().OrderBy(s => s.Name).ToArray();
+            var sources = _localizationManager.GetAllSources().OrderBy(s => s.Name).ToArray();
             config.Sources = sources.Select(s => new AbpLocalizationSourceDto
             {
                 Name = s.Name,
@@ -149,21 +139,21 @@ namespace Abp.Web.Configuration
             return config;
         }
 
-        protected virtual async Task<AbpUserFeatureConfigDto> GetUserFeaturesConfig()
+        private async Task<AbpUserFeatureConfigDto> GetUserFeaturesConfig()
         {
             var config = new AbpUserFeatureConfigDto()
             {
                 AllFeatures = new Dictionary<string, AbpStringValueDto>()
             };
 
-            var allFeatures = FeatureManager.GetAll().ToList();
+            var allFeatures = _featureManager.GetAll().ToList();
 
-            if (AbpSession.TenantId.HasValue)
+            if (_abpSession.TenantId.HasValue)
             {
-                var currentTenantId = AbpSession.GetTenantId();
+                var currentTenantId = _abpSession.GetTenantId();
                 foreach (var feature in allFeatures)
                 {
-                    var value = await FeatureChecker.GetValueAsync(currentTenantId, feature.Name);
+                    var value = await _featureChecker.GetValueAsync(currentTenantId, feature.Name);
                     config.AllFeatures.Add(feature.Name, new AbpStringValueDto
                     {
                         Value = value
@@ -184,18 +174,18 @@ namespace Abp.Web.Configuration
             return config;
         }
 
-        protected virtual async Task<AbpUserAuthConfigDto> GetUserAuthConfig()
+        private async Task<AbpUserAuthConfigDto> GetUserAuthConfig()
         {
             var config = new AbpUserAuthConfigDto();
 
-            var allPermissionNames = PermissionManager.GetAllPermissions(false).Select(p => p.Name).ToList();
+            var allPermissionNames = _permissionManager.GetAllPermissions(false).Select(p => p.Name).ToList();
             var grantedPermissionNames = new List<string>();
 
-            if (AbpSession.UserId.HasValue)
+            if (_abpSession.UserId.HasValue)
             {
                 foreach (var permissionName in allPermissionNames)
                 {
-                    if (await PermissionChecker.IsGrantedAsync(permissionName))
+                    if (await _permissionChecker.IsGrantedAsync(permissionName))
                     {
                         grantedPermissionNames.Add(permissionName);
                     }
@@ -208,43 +198,36 @@ namespace Abp.Web.Configuration
             return config;
         }
 
-        protected virtual async Task<AbpUserNavConfigDto> GetUserNavConfig()
+        private async Task<AbpUserNavConfigDto> GetUserNavConfig()
         {
-            var userMenus = await UserNavigationManager.GetMenusAsync(AbpSession.ToUserIdentifier());
+            var userMenus = await _userNavigationManager.GetMenusAsync(_abpSession.ToUserIdentifier());
             return new AbpUserNavConfigDto
             {
                 Menus = userMenus.ToDictionary(userMenu => userMenu.Name, userMenu => userMenu)
             };
         }
 
-        protected virtual async Task<AbpUserSettingConfigDto> GetUserSettingConfig()
+        private async Task<AbpUserSettingConfigDto> GetUserSettingConfig()
         {
             var config = new AbpUserSettingConfigDto
             {
                 Values = new Dictionary<string, string>()
             };
 
-            var settingDefinitions = SettingDefinitionManager
-                .GetAllSettingDefinitions();
+            var settingDefinitions = _settingDefinitionManager
+                .GetAllSettingDefinitions()
+                .Where(sd => sd.IsVisibleToClients);
 
-            using (var scope = _iocResolver.CreateScope())
+            foreach (var settingDefinition in settingDefinitions)
             {
-                foreach (var settingDefinition in settingDefinitions)
-                {
-                    if (!await settingDefinition.ClientVisibilityProvider.CheckVisible(scope))
-                    {
-                        continue;
-                    }
-
-                    var settingValue = await SettingManager.GetSettingValueAsync(settingDefinition.Name);
-                    config.Values.Add(settingDefinition.Name, settingValue);
-                }
+                var settingValue = await _settingManager.GetSettingValueAsync(settingDefinition.Name);
+                config.Values.Add(settingDefinition.Name, settingValue);
             }
 
             return config;
         }
 
-        protected virtual AbpUserClockConfigDto GetUserClockConfig()
+        private AbpUserClockConfigDto GetUserClockConfig()
         {
             return new AbpUserClockConfigDto
             {
@@ -252,9 +235,9 @@ namespace Abp.Web.Configuration
             };
         }
 
-        protected virtual async Task<AbpUserTimingConfigDto> GetUserTimingConfig()
+        private async Task<AbpUserTimingConfigDto> GetUserTimingConfig()
         {
-            var timezoneId = await SettingManager.GetSettingValueAsync(TimingSettingNames.TimeZone);
+            var timezoneId = await _settingManager.GetSettingValueAsync(TimingSettingNames.TimeZone);
             var timezone = TimezoneHelper.FindTimeZoneInfo(timezoneId);
 
             return new AbpUserTimingConfigDto
@@ -276,14 +259,14 @@ namespace Abp.Web.Configuration
             };
         }
 
-        protected virtual AbpUserSecurityConfigDto GetUserSecurityConfig()
+        private AbpUserSecurityConfigDto GetUserSecurityConfig()
         {
-            return new AbpUserSecurityConfigDto
+            return new AbpUserSecurityConfigDto()
             {
                 AntiForgery = new AbpUserAntiForgeryConfigDto
                 {
-                    TokenCookieName = AbpAntiForgeryConfiguration.TokenCookieName,
-                    TokenHeaderName = AbpAntiForgeryConfiguration.TokenHeaderName
+                    TokenCookieName = _abpAntiForgeryConfiguration.TokenCookieName,
+                    TokenHeaderName = _abpAntiForgeryConfiguration.TokenHeaderName
                 }
             };
         }

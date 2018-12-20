@@ -31,14 +31,14 @@ namespace Abp.Authorization.Users
         /// Login Provider.
         /// </summary>
         [Required]
-        [StringLength(MaxLoginProviderLength)]
+        [MaxLength(MaxLoginProviderLength)]
         public virtual string LoginProvider { get; set; }
 
         /// <summary>
         /// Key in the <see cref="LoginProvider"/>.
         /// </summary>
         [Required]
-        [StringLength(MaxProviderKeyLength)]
+        [MaxLength(MaxProviderKeyLength)]
         public virtual string ProviderKey { get; set; }
 
         public UserLogin()

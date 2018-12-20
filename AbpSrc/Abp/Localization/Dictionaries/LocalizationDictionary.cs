@@ -19,9 +19,12 @@ namespace Abp.Localization.Dictionaries
             get
             {
                 var localizedString = GetOrNull(name);
-                return localizedString?.Value;
+                return localizedString == null ? null : localizedString.Value;
             }
-            set => _dictionary[name] = new LocalizedString(name, value, CultureInfo);
+            set
+            {
+                _dictionary[name] = new LocalizedString(name, value, CultureInfo);
+            }
         }
 
         private readonly Dictionary<string, LocalizedString> _dictionary;
@@ -39,7 +42,8 @@ namespace Abp.Localization.Dictionaries
         /// <inheritdoc/>
         public virtual LocalizedString GetOrNull(string name)
         {
-            return _dictionary.TryGetValue(name, out var localizedString) ? localizedString : null;
+            LocalizedString localizedString;
+            return _dictionary.TryGetValue(name, out localizedString) ? localizedString : null;
         }
 
         /// <inheritdoc/>

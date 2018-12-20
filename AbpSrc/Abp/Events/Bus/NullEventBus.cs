@@ -14,7 +14,8 @@ namespace Abp.Events.Bus
         /// <summary>
         /// Gets single instance of <see cref="NullEventBus"/> class.
         /// </summary>
-        public static NullEventBus Instance { get; } = new NullEventBus();
+        public static NullEventBus Instance { get { return SingletonInstance; } }
+        private static readonly NullEventBus SingletonInstance = new NullEventBus();
 
         private NullEventBus()
         {
@@ -27,19 +28,7 @@ namespace Abp.Events.Bus
         }
 
         /// <inheritdoc/>
-        public IDisposable AsyncRegister<TEventData>(Func<TEventData, Task> action) where TEventData : IEventData
-        {
-            return NullDisposable.Instance;
-        }
-
-        /// <inheritdoc/>
         public IDisposable Register<TEventData>(IEventHandler<TEventData> handler) where TEventData : IEventData
-        {
-            return NullDisposable.Instance;
-        }
-
-        /// <inheritdoc/>
-        public IDisposable AsyncRegister<TEventData>(IAsyncEventHandler<TEventData> handler) where TEventData : IEventData
         {
             return NullDisposable.Instance;
         }
@@ -47,7 +36,7 @@ namespace Abp.Events.Bus
         /// <inheritdoc/>
         public IDisposable Register<TEventData, THandler>()
             where TEventData : IEventData
-            where THandler : IEventHandler, new()
+            where THandler : IEventHandler<TEventData>, new()
         {
             return NullDisposable.Instance;
         }
@@ -76,17 +65,7 @@ namespace Abp.Events.Bus
         }
 
         /// <inheritdoc/>
-        public void AsyncUnregister<TEventData>(Func<TEventData, Task> action) where TEventData : IEventData
-        {
-        }
-
-        /// <inheritdoc/>
         public void Unregister<TEventData>(IEventHandler<TEventData> handler) where TEventData : IEventData
-        {
-        }
-
-        /// <inheritdoc/>
-        public void AsyncUnregister<TEventData>(IAsyncEventHandler<TEventData> handler) where TEventData : IEventData
         {
         }
 
@@ -138,25 +117,25 @@ namespace Abp.Events.Bus
         /// <inheritdoc/>
         public Task TriggerAsync<TEventData>(TEventData eventData) where TEventData : IEventData
         {
-            return Task.CompletedTask;
+            return new Task(() => { });
         }
 
         /// <inheritdoc/>
         public Task TriggerAsync<TEventData>(object eventSource, TEventData eventData) where TEventData : IEventData
         {
-            return Task.CompletedTask;
+            return new Task(() => { });
         }
 
         /// <inheritdoc/>
         public Task TriggerAsync(Type eventType, IEventData eventData)
         {
-            return Task.CompletedTask;
+            return new Task(() => { });
         }
 
         /// <inheritdoc/>
         public Task TriggerAsync(Type eventType, object eventSource, IEventData eventData)
         {
-            return Task.CompletedTask;
+            return new Task(() => { });
         }
     }
 }

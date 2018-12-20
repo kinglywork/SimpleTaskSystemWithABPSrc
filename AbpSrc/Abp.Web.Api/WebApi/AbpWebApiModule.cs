@@ -115,7 +115,8 @@ namespace Abp.WebApi
                 }
             }
 
-            httpConfiguration.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new AbpCamelCasePropertyNamesContractResolver();
+            httpConfiguration.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            httpConfiguration.Formatters.JsonFormatter.SerializerSettings.Converters.Insert(0, new AbpDateTimeConverter());
             httpConfiguration.Formatters.Add(new PlainTextFormatter());
         }
 

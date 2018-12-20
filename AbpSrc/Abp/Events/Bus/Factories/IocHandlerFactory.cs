@@ -13,7 +13,7 @@ namespace Abp.Events.Bus.Factories
         /// <summary>
         /// Type of the handler.
         /// </summary>
-        public Type HandlerType { get; }
+        public Type HandlerType { get; private set; }
 
         private readonly IIocResolver _iocResolver;
 
@@ -35,11 +35,6 @@ namespace Abp.Events.Bus.Factories
         public IEventHandler GetHandler()
         {
             return (IEventHandler)_iocResolver.Resolve(HandlerType);
-        }
-
-        public Type GetHandlerType()
-        {
-            return HandlerType;
         }
 
         /// <summary>

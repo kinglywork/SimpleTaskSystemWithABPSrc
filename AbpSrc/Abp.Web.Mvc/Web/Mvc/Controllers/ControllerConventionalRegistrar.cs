@@ -19,17 +19,6 @@ namespace Abp.Web.Mvc.Controllers
                     .If(type => !type.GetTypeInfo().IsGenericTypeDefinition)
                     .LifestyleTransient()
                 );
-
-            //PerWebRequest
-            context.IocManager.IocContainer.Register(
-                Classes.FromAssembly(context.Assembly)
-                    .IncludeNonPublicTypes()
-                    .BasedOn<IPerWebRequestDependency>()
-                    .If(type => !type.GetTypeInfo().IsGenericTypeDefinition)
-                    .WithService.Self()
-                    .WithService.DefaultInterfaces()
-                    .LifestylePerWebRequest()
-            );
         }
     }
 }
